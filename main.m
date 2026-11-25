@@ -70,3 +70,15 @@ if ~isempty(truth)
     plotContrast(truth.verts, truth.cells, real(truth.contrast), "True $\mathrm{Re}\{\Delta\varepsilon_r\}$");
     plotContrast(truth.verts, truth.cells, imag(truth.contrast), "True $\mathrm{Im}\{\Delta\varepsilon_r\}$");
 end
+
+
+%% Matrix structure 
+% entries
+
+N = 12;
+M = mod(1:N,2) ~= mod((1:N).',2); % Mask
+
+imagesc(M); axis image; colormap(gray); colorbar; xlabel('Rx'); ylabel('Tx'); % plot the mask to check it
+xticks(1:size(M,1)); yticks(1:size(M,1)); % plot all the thicks on the rulers
+% K= magic(12);
+Test = K .*M;% logical multiplication 
