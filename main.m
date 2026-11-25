@@ -4,7 +4,7 @@ close all;
 clear;
 
 resultsDir = fullfile("Examples/Circular_scattered_field/results");
-maxIter = 1;
+maxIter = 15;
 min_err = 1e-2;
 
 operatorName  = "operator";   % E_inc on the reconstruction mesh
