@@ -1,0 +1,31 @@
+sim.f = 1e9;
+
+materials.background.epsr  = 10;
+materials.background.sigma = 0.02;             % S/m
+
+materials.doi.epsr  = 10;
+materials.doi.sigma = 0.02;
+
+materials.target.epsr  = 45;
+materials.target.sigma = 0.06;
+
+geom.doiRadius    = 0.10;
+geom.antennaRing  = 0.12;
+geom.nAntennas    = 12;
+geom.targetRadius = 0.01;
+geom.targetCenter = [0.03, 0.03];
+
+meshData.hDOI    = lambda_doi/30;
+meshData.hBG     = lambda_bg/24;
+meshData.hAnt    = lambda_bg/30;
+meshData.hTarget = lambda_tgt/30;
+meshData.rAnt    = meshData.hAnt;
+
+meshRec         = meshData;
+meshRec.hDOI    = lambda_doi/24;
+meshRec.hTarget = lambda_tgt/24;
+
+opts.outputDir     = resultsDir;
+opts.current       = 1e-3;                     % A
+opts.name          = "incident";
+opts.includeTarget = false;
