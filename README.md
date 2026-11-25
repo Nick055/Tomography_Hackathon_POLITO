@@ -87,3 +87,6 @@ The jury assesses understanding of the electromagnetic forward model, inversion 
 - [ ] Publish image-scoring thresholds, two-component aggregation, zero-range policy and timeout.
 - [ ] Confirm team rosters/leads, all three jurors, and time available for interviews and pitches.
 - [ ] Confirm bonus GUI policy and official final total convention.
+
+
+Read this! 
