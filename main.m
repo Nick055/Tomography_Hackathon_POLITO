@@ -3,7 +3,8 @@ clc;
 close all;
 clear;
 
-resultsDir = fullfile("Datasets/default_12antennas");
+setup_osmi;
+resultsDir = fullfile("Datasets/bgd10_sct45");
 maxIter = 100;
 min_err = 1e-2;
 include_reflections = true;
