@@ -5,7 +5,10 @@ clear;
 
 resultsDir = fullfile("Examples/Circular_scattered_field/results");
 maxIter = 15;
-min_err = 1e-2;
+min_err = 1e-3;
+include_reflections = false;
+
+%% LOAD DATA
 
 operatorName  = "operator";   % E_inc on the reconstruction mesh
 stateName     = "total";      % measured state (with target)
@@ -15,7 +18,24 @@ operator  = load_fields(operatorName,  resultsDir);
 state     = load_fields(stateName,     resultsDir);
 reference = load_fields(referenceName, resultsDir);
 
+%% SETUP MASK FOR S-PARAMETERS
+
+N = size(operator.Eprobes,1);
+[r,c] = ndgrid(1:N, 1:N);
+mask = ones(N,N);
+mask(mod(r, 2) == mod(c, 2)) = 0;
+if include_reflections
+    mask(logical(eye(N))) = 1;
+end
+mask(r < c) = 0;
+% plot the mask to check it
+imagesc(mask); axis image; colormap(gray); colorbar; xlabel('Rx'); ylabel('Tx');
+xticks(1:size(mask,1)); yticks(1:size(mask,1)); % plot all the thicks on the rulers
+
+%% COMPUTE BIM
+
 [E_sc, truth] = differential_data(state, reference, operator);
+E_sc = E_sc * mask;
 
 doi   = operator.mesh.cellsDOI;
 areas = operator.mesh.area(doi);
@@ -33,6 +53,7 @@ for ii = 1:maxIter
     delta_eps = rec.delta_eps;
 
     % 2. Check parameter convergence
+    % TODO: think of better metric for relChange
     relChange = norm(delta_eps - delta_eps_prev) / max(norm(delta_eps), eps);
     fprintf("Iter %d: relChange = %.9e\n", ii, relChange);
     if ii > 1 && relChange < min_err
@@ -75,10 +96,10 @@ end
 %% Matrix structure 
 % entries
 
-N = 12;
-M = mod(1:N,2) ~= mod((1:N).',2); % Mask
+% N = 12;
+% M = mod(1:N,2) ~= mod((1:N).',2); % Mask
 
-imagesc(M); axis image; colormap(gray); colorbar; xlabel('Rx'); ylabel('Tx'); % plot the mask to check it
-xticks(1:size(M,1)); yticks(1:size(M,1)); % plot all the thicks on the rulers
+% imagesc(M); axis image; colormap(gray); colorbar; xlabel('Rx'); ylabel('Tx'); % plot the mask to check it
+% xticks(1:size(M,1)); yticks(1:size(M,1)); % plot all the thicks on the rulers
 % K= magic(12);
-Test = K .*M;% logical multiplication 
+%Test = K .*M;% logical multiplication 
