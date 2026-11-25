@@ -4,6 +4,8 @@ close all;
 clear;
 
 resultsDir = fullfile("Examples/Circular_scattered_field/results");
+maxIter = 1;
+min_err = 1e-2;
 
 operatorName  = "operator";   % E_inc on the reconstruction mesh
 stateName     = "total";      % measured state (with target)
@@ -15,12 +17,42 @@ reference = load_fields(referenceName, resultsDir);
 
 [E_sc, truth] = differential_data(state, reference, operator);
 
-doi = operator.mesh.cellsDOI;
+doi   = operator.mesh.cellsDOI;
+areas = operator.mesh.area(doi);
+E_inc_doi = operator.Ecells(doi,:);
 
 opts.threshold = 0.999;
-opts.plotSVD   = true;
-rec = born_tsvd(E_sc, operator.Ecells(doi, :), operator.mesh.area(doi), ...
-                operator.freq, operator.current, opts);
+opts.plotSVD   = false;
+
+E_int = E_inc_doi;
+delta_eps_prev = zeros(numel(doi),1);
+
+for ii = 1:maxIter
+    % 1. Linearized inverse step (TSVD) using current internal field E_int
+    rec = born_tsvd(E_sc, E_int, areas, operator.freq, operator.current, opts);
+    delta_eps = rec.delta_eps;
+
+    % 2. Check parameter convergence
+    relChange = norm(delta_eps - delta_eps_prev) / max(norm(delta_eps), eps);
+    fprintf("Iter %d: relChange = %.9e\n", ii, relChange);
+    if ii > 1 && relChange < min_err
+        break;
+    end
+    delta_eps_prev = delta_eps;
+    perm_full = operator.perm(:);
+    perm_full(doi) = perm_full(doi) + delta_eps(:);
+
+    % 3. Update internal total field inside DOI for next iteration
+    sol = solve_fields(operator.mesh.verts, ...
+        operator.mesh.cells, ...
+        perm_full, ...
+        operator.freq, ...
+        operator.mesh.probeNodes, ...
+        operator.eps_bg, ...
+        operator.current, ...
+        operator.mesh.cellsDOI);
+    E_int = sol.Ecells(doi,:);
+end
 
 verts = operator.mesh.verts;
 cells = operator.mesh.cells(doi, :);
