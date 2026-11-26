@@ -20,23 +20,25 @@ operator  = load_fields(operatorName,  resultsDir);
 state     = load_fields(stateName,     resultsDir);
 reference = load_fields(referenceName, resultsDir);
 
-%% SETUP MASK FOR S-PARAMETERS
-
-N = size(operator.Eprobes,1);
-[r,c] = ndgrid(1:N, 1:N);
-mask = ones(N,N);
-mask(mod(r, 2) == mod(c, 2)) = 0;
+%% SETUP MASK: which Tx-Rx pairs are measured
+N    = size(operator.Eprobes, 1);        % number of antennas
+idx  = (1:N).';
+mask = mod(idx,2) ~= mod(idx.',2);       % odd-even pairs (not all antennas pairs were measured)
 if include_reflections
-    mask(logical(eye(N))) = 1;
+    mask(1:N+1:end) = true;              % diagonal = reflections (monostatic)
 end
-mask(r < c) = 0;
-% plot the mask to check it
-imagesc(mask); axis image; colormap(gray); colorbar; xlabel('Rx'); ylabel('Tx');
-xticks(1:size(mask,1)); yticks(1:size(mask,1)); % plot all the thicks on the rulers
+opts.mask = mask;                        % this will be passed into "born_tsvd_new.m"
+
+%% TRANSMISSION AMPLITUDE (measured pairs, fixed scale to compare frequencies)
+S = 20*log10(abs(state.Eprobes));
+S(~mask) = NaN;
+figure; imagesc(S, 'AlphaData', ~isnan(S)); axis image;
+cb = colorbar; cb.Label.String = 'dB'; cb.Label.Interpreter = 'latex';
+clim([-20 0]); xticks(1:N); yticks(1:N); xlabel('Tx'); ylabel('Rx');
+title(sprintf('$|S|$ @ %.2f GHz', operator.freq/1e9), 'Interpreter', 'latex');
 
 %% COMPUTE BIM
 [E_sc, truth] = differential_data(state, reference, operator);
-E_sc = E_sc .* mask;
 
 doi   = operator.mesh.cellsDOI;
 areas = operator.mesh.area(doi);
@@ -171,9 +173,9 @@ elseif solver == "DBIM"
             operator.current, ...
             operator.mesh.cellsDOI);
         if isfield(sol_check, 'E_sc_probes')
-            final_res = norm((E_sc - sol_check.E_sc_probes .* mask), 'fro');
+            final_res = norm(tril(mask) .* (E_sc - sol_check.E_sc_probes), 'fro');
         elseif isfield(sol_check, 'Eprobes')
-            final_res = norm((E_sc - (sol_check.Eprobes - reference.Eprobes) .* mask), 'fro');
+            final_res = norm(tril(mask) .* (E_sc - (sol_check.Eprobes - reference.Eprobes)), 'fro');
         else
             final_res = inf;
         end
