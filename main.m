@@ -31,7 +31,6 @@ opts.mask = mask;                        % this will be passed into "born_tsvd_n
 
 %% COMPUTE BIM
 [E_sc, truth] = differential_data(state, reference, operator);
-E_sc = E_sc .* mask;
 
 doi   = operator.mesh.cellsDOI;
 areas = operator.mesh.area(doi);
@@ -166,9 +165,9 @@ elseif solver == "DBIM"
             operator.current, ...
             operator.mesh.cellsDOI);
         if isfield(sol_check, 'E_sc_probes')
-            final_res = norm((E_sc - sol_check.E_sc_probes .* mask), 'fro');
+            final_res = norm(tril(mask) .* (E_sc - sol_check.E_sc_probes), 'fro');
         elseif isfield(sol_check, 'Eprobes')
-            final_res = norm((E_sc - (sol_check.Eprobes - reference.Eprobes) .* mask), 'fro');
+            final_res = norm(tril(mask) .* (E_sc - (sol_check.Eprobes - reference.Eprobes)), 'fro');
         else
             final_res = inf;
         end

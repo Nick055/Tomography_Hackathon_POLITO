@@ -18,7 +18,7 @@ end
 eps0  = 8.854187817e-12;
 omega = 2*pi*freq;
 
-%% Data residual vector (reciprocal-unique pairs n <= m)
+%% Data residual vector (measured pairs, each reciprocal pair once: m >= n)
 E_res  = E_sc_meas - E_sc_bg;
 N_ant  = size(E_res, 1);
 
