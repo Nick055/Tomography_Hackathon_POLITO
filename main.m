@@ -4,8 +4,8 @@ close all;
 clear;
 
 setup_osmi;
-resultsDir = fullfile("Datasets/bgd10_sct45");
-maxIter = 100;
+resultsDir = fullfile("Datasets/default_12antennas");
+maxIter = 15;
 min_err = 1e-2;
 include_reflections = true;
 solver = "DBIM"; %BIM or DBIM
@@ -107,6 +107,10 @@ elseif solver == "DBIM"
 
     best_res_norm  = inf;
     best_perm_dbim = perm_dbim;
+
+    opts.regMethod = 'tikhonov';
+    opts.relLambda = true;
+    opts.lambda = 1e-1;
 
     for ii = 1:maxIter
         % 1. Linearized DBIM step using current distorted internal field and data residual
