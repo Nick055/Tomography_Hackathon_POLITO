@@ -20,19 +20,14 @@ operator  = load_fields(operatorName,  resultsDir);
 state     = load_fields(stateName,     resultsDir);
 reference = load_fields(referenceName, resultsDir);
 
-%% SETUP MASK FOR S-PARAMETERS
-
-N = size(operator.Eprobes,1);
-[r,c] = ndgrid(1:N, 1:N);
-mask = ones(N,N);
-mask(mod(r, 2) == mod(c, 2)) = 0;
+%% SETUP MASK: which Tx-Rx pairs are measured
+N    = size(operator.Eprobes, 1);        % number of antennas
+idx  = (1:N).';
+mask = mod(idx,2) ~= mod(idx.',2);       % odd-even pairs (not all antennas pairs were measured)
 if include_reflections
-    mask(logical(eye(N))) = 1;
+    mask(1:N+1:end) = true;              % diagonal = reflections (monostatic)
 end
-mask(r < c) = 0;
-% plot the mask to check it
-imagesc(mask); axis image; colormap(gray); colorbar; xlabel('Rx'); ylabel('Tx');
-xticks(1:size(mask,1)); yticks(1:size(mask,1)); % plot all the thicks on the rulers
+opts.mask = mask;                        % this will be passed into "born_tsvd_new.m"
 
 %% COMPUTE BIM
 [E_sc, truth] = differential_data(state, reference, operator);
