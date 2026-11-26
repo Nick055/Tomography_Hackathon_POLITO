@@ -21,7 +21,14 @@ omega = 2*pi*freq;
 %% Data residual vector (reciprocal-unique pairs n <= m)
 E_res  = E_sc_meas - E_sc_bg;
 N_ant  = size(E_res, 1);
-[n, m] = find(triu(true(N_ant)));          % n = transmitter, m = receiver
+
+if isfield(opts, 'mask') && ~isempty(opts.mask)
+    sel = tril(logical(opts.mask));      % measured pairs only (uses the mask)
+else
+    sel = tril(true(N_ant));             % all pairs
+end
+[m, n] = find(sel);                      % m = receiver (row), n = transmitter (col), m >= n
+
 e      = E_res(sub2ind([N_ant, N_ant], m, n));
 
 %% Distorted data operator K
