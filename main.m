@@ -29,6 +29,14 @@ if include_reflections
 end
 opts.mask = mask;                        % this will be passed into "born_tsvd_new.m"
 
+%% TRANSMISSION AMPLITUDE (measured pairs, fixed scale to compare frequencies)
+S = 20*log10(abs(state.Eprobes));
+S(~mask) = NaN;
+figure; imagesc(S, 'AlphaData', ~isnan(S)); axis image;
+cb = colorbar; cb.Label.String = 'dB'; cb.Label.Interpreter = 'latex';
+clim([-20 0]); xticks(1:N); yticks(1:N); xlabel('Tx'); ylabel('Rx');
+title(sprintf('$|S|$ @ %.2f GHz', operator.freq/1e9), 'Interpreter', 'latex');
+
 %% COMPUTE BIM
 [E_sc, truth] = differential_data(state, reference, operator);
 
