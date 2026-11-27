@@ -5,18 +5,18 @@ clear all;
 setup_osmi;
 
 simFile = fullfile("Datasets/Measurements_lab/domain.mat");
-expFile = fullfile("Datasets/Measurements_lab/meas_22_pla_square_pos_1_circle_pos_2.s12p");
-expBgdFile = fullfile("Datasets/Measurements_lab/meas_21_background.s12p");
+expFile = fullfile("Datasets/Measurements_lab/meas_12_pla_circle_pos_1.s12p");
+expBgdFile = fullfile("Datasets/Measurements_lab/meas_11_background.s12p");
 maxIter = 15;
 min_err = 1e-2;
 binThreshold = 10^(-5/20);
-include_reflections = true; %include diagonal of S matrix (S11, S22 etc)
-include_both_triangles = true;
+include_reflections = false; %include diagonal of S matrix (S11, S22 etc)
+include_both_triangles = false;
 solver = "DBIM"; %BIM or DBIM
 
 opts.regMethod = "tikhonov"; %'tsvd' or 'tikhonov'
 opts.relLambda = true; %scale lambda by largest singular value s(1)
-opts.lambda = 8e-2;
+opts.lambda = 0.1;
 opts.includeReflections = include_reflections; 
 opts.plotSVD = false;
 opts.threshold = 0.99;
